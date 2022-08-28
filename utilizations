@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+#
+# Inspect CPU, GPU, and memery usage and temperature.
+#
+# Usage: ./utilizations
+#    or: watch -n 1 ./utilizations
+#
+# Requirement: lm-sensors (https://github.com/lm-sensors/lm-sensors)
+#
+# PS. lm-sensors exists in most linux distribution package managers.
 _cpurate=$(cat <(grep 'cpu ' /proc/stat) <(sleep .5 && grep 'cpu ' /proc/stat) | \
 	awk -v RS="" '{printf "%.2f%s\n", ($13-$2+$15-$4)*100/($13-$2+$15-$4+$16-$5), "%"}')
 cpurate=$(printf "\nCPU Rate: %s\n" $_cpurate)
