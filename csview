@@ -52,10 +52,6 @@ while true; do
       shift
       break
     ;;
-    *) 
-      shift
-      continue
-      ;;
   esac
 done
 
