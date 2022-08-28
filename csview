@@ -1,22 +1,62 @@
 #!/usr/bin/env bash
-# Author: Benjamin Oakes <hello@benjaminoakes.com>
-# Source: https://github.com/benjaminoakes/utilities/blob/master/view-csv
-set -o errexit
-
+#
+# Simple terminal CSV file viewer.
+#
+# This is a fork of Benjamin Oakes <hello@benjaminoakes.com>'s work
+# You can find the original code here
+# https://github.com/benjaminoakes/utilities/blob/master/view-csv
 function show_usage {
   cat <<EOF
-Usage: $0 [--help] [filename]
+Usage: $0 [-h|--help] [filename] [-d|--delimiter]
 
 View a CSV file at the command line.
 
-  --help        Show this help text.
-  filename      CSV file to be viewed
+  filename              The input file.
+  -d, --delimiter CHAR  Set the delimiter of input to CHAR. (default ",")
+  -h, --help            Show this help text.
+
+Examples:
+$ cat foo.csv
+a,b,c
+d,e,f
+$ $0 foo.csv
+
+$ cat bar.txt
+a:b:c
+d:e:f
+$ cat bar.txt | $0 -d':'
 EOF
   exit -1
 }
 
-if [ "$1" == "--help" -o "$1" == "-h" ]; then
-  show_usage
+
+OPTS=$(getopt -o 'hd:' --long 'help,delimiter:' -n "$0" -- "$@")
+
+if [ $? -ne 0 ]; then
+  echo 'Error occur while parsing options, terminating...' >&2
+  exit 1
 fi
 
-cat "${1:-/dev/stdin}" | sed 's/,,/,_,/g' | column -s, -t | less -#2 -N -S
+eval set -o errexit -- "$OPTS"
+unset OPTS
+
+while true; do
+  case "$1" in
+    '-h'|'--help') show_usage;;
+    '-d'|'--delimiter')
+      delimiter="$2"
+      shift 2
+      continue
+    ;;
+    '--')
+      shift
+      break
+    ;;
+    *) 
+      shift
+      continue
+      ;;
+  esac
+done
+
+cat "${1:-/dev/stdin}" | sed 's/,,/,_,/g' | column -s"${delimiter:-,}" -t | less -#2 -N -S
