@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+_cpurate=$(cat <(grep 'cpu ' /proc/stat) <(sleep .5 && grep 'cpu ' /proc/stat) | \
+	awk -v RS="" '{printf "%.2f%s\n", ($13-$2+$15-$4)*100/($13-$2+$15-$4+$16-$5), "%"}')
+cpurate=$(printf "\nCPU Rate: %s\n" $_cpurate)
+cputemp=$(printf "CPU Temperature\n%s\n" "$(sensors coretemp-isa-0000 | tail +3)")
+
+mem=$(free -h)
+
+gpuqueryfile="/tmp/GPUquery-$$"
+nvidia-smi -q 2>/dev/null > $gpuqueryfile
+[ $? -eq 0 ] && {
+	sed -i 's/\s\s*//' $gpuqueryfile
+	gpurate=$(grep Utilization -A 2 $gpuqueryfile | sed 's/Utilization/GPU \0/')
+	gputemp=$(grep 'GPU Current Temp' $gpuqueryfile)
+
+	printf "%s\n\n%s\n\n%s\n\n%s\n\n%s\n" "$cpurate" "$cputemp" "$mem" "$gpurate" "$gputemp"
+} || {
+	printf "%s\n\n%s\n\n%s\n" "$cpurate" "$cputemp" "$mem"
+}
+
+rm -rf $gpuqueryfile
+
