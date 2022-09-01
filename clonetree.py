@@ -19,10 +19,18 @@ def pipeline(*steps) -> "Callable[Any, Any]":
     pipeline: Callable
         A pipeline function of input functions.
     """
+    def new_func(*args, **kwargs) -> "Any":
+        out = steps[0](*args, **kwargs)
+
+        for next_step in steps[1:]:
+            out = next_step(out)
+
+        return out
+
+    return new_func
 
 
-
-def clonetree(src: str, dest: str, callback: "Callable" = None, *args, **kwargs):
+def clonetree(src: str, dest: str, callback: "Callable" = None, **kwargs):
     """Clone the whole structute of given source directory, and apply callback on
     any file it meet.
 
@@ -44,8 +52,6 @@ def clonetree(src: str, dest: str, callback: "Callable" = None, *args, **kwargs)
         A function accepts at least two string as parameters.
         The first parameter is the source path of the file, the second is the new one.
         The default callback will not doing anything.
-    *args:
-        Any other positional arguments will pass directly to callback.
     **kwargs:
         Any other keyword  arguments will pass directly to callback.
     """
@@ -58,4 +64,4 @@ def clonetree(src: str, dest: str, callback: "Callable" = None, *args, **kwargs)
             os.mkdir(destination)
             clonetree(entry.path, destination, callback, *args, **kwargs)
         if entry.is_file():
-            callback(entry.path, destination, *args, **kwargs)
+            callback(entry.path, destination, **kwargs)
