@@ -3,33 +3,6 @@ from pathlib import Path
 import os
 
 
-def pipeline(*steps) -> "Callable[Any, Any]":
-    """Construct a pipeline from the given functions.
-
-    This function do not guarantee the input and output of any pair of function
-    are match. You need to take care of it manually, there is no magic.
-
-    Parameters
-    ----------
-    *steps: function
-        The pipeline elements.
-
-    Returns
-    -------
-    pipeline: Callable
-        A pipeline function of input functions.
-    """
-    def new_func(*args, **kwargs) -> "Any":
-        out = steps[0](*args, **kwargs)
-
-        for next_step in steps[1:]:
-            out = next_step(out)
-
-        return out
-
-    return new_func
-
-
 def clonetree(src: str, dest: str, callback: "Callable" = None, **kwargs):
     """Clone the whole structute of given source directory, and apply callback on
     any file it meet.
