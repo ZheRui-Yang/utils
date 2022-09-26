@@ -34,7 +34,7 @@ def clonetree(src: str, dest: str, callback: "Callable" = None, **kwargs):
         destination: Path = Path(dest) / entry.name
 
         if entry.is_dir():
-            os.mkdir(destination)
+            os.makedirs(destination, exist_ok=True)
             clonetree(entry.path, destination, callback, *args, **kwargs)
         if entry.is_file():
             callback(entry.path, destination, **kwargs)
